@@ -168,6 +168,35 @@ main() async {
   print(say('Bob', 'Howdy'));
   print(say('Tom', 'Howdy', 'iPhone'));
 
+
+  void errorFunc() {
+    try {
+      // throw Exceptionで意図的に例外を投げる
+      throw Exception('例外です');
+    } on Exception catch(e) {
+      // 捕まえる型を指定するには on ~~ catch を使う
+      // eはException型
+      print(e);
+      // rethrowでtry-catch-finallyブロックの外に例外を投げ直す事ができる（関数の外などでcatchする必要あり）
+      rethrow;
+    } finally {
+      // finallyブロックは例外の有無にかかわらず実行される、省略可。
+      print('finally');
+    }
+  }
+
+  // 例外処理：try-catch文
+  try {
+    errorFunc();
+  } catch (e, s) {
+    // 型を指定しないcatchは、何型かわからない例外全部キャッチする
+    // catchに仮引数を２つ指定すると、２つ目はStackTraceオブジェクトが入る
+    print(s);
+  }
+
+  // クラスのテスト
+  classTest();
+
   // カスケード記法、..で対象のインスタンスに対するメソッド呼び出しの操作を続けられる
   var fullString = StringBuffer()
     ..write('Use a StringBuffer for ')
@@ -193,26 +222,10 @@ main() async {
   }
 
   // 改行を含んだ文字列をリテラルで表現するには'''で囲う
-  var sarasara = '''
+  var multiline = '''
 改行
 しました''';
-  print(sarasara);
-
-  void errorFunc() {
-    try {
-      // throw Exceptionで意図的に例外を投げる
-      throw Exception('例外です');
-    } on Exception catch(e) {
-      // 捕まえる型を指定するには on ~~ catch を使う
-      // eはException型
-      print(e);
-      // rethrowでtry-catch-finallyブロックの外に例外を投げ直す事ができる（関数の外などでcatchする必要あり）
-      rethrow;
-    } finally {
-      // finallyブロックは例外の有無にかかわらず実行される、省略可。
-      print('finally');
-    }
-  }
+  print(multiline);
 
   String numbers = '1, 2, 3';
   // 文字列の分解はsplitを使う
@@ -220,18 +233,6 @@ main() async {
   numberList.forEach((values) { 
     print(values);
   });
-
-  // 例外処理：try-catch文
-  try {
-    errorFunc();
-  } catch (e, s) {
-    // 型を指定しないcatchは、何型かわからない例外全部キャッチする
-    // catchに仮引数を２つ指定すると、２つ目はStackTraceオブジェクトが入る
-    print(s);
-  }
-
-  // クラスのテスト
-  classTest();
 
   // 非同期関数（async）、Future<データ型>で戻り値を返却する必要がある
   // JavaScriptのPromise関数とほぼ同じ
@@ -393,8 +394,9 @@ void classTest() {
     return sum;
   }
 
-  int r1 = sum([1,2,3], 0);
+  int r1 = sum<int>([1,2,3], 0);
   print(r1);
+  // 型指定しない場合は左辺の型に暗黙的に型推定される
   double r2 = sum([1.1, 2.2, 3.3], 0.0);
   print(r2);
 
@@ -532,7 +534,7 @@ class Cat extends Animal {
   }
 }
 
-// Dartには interfaceキーワードが存在しませんが、クラスを宣言した時点でそのクラスと同じAPIのinterfaceが勝手に作られる（暗黙的なinterface）
+// Dartには interfaceキーワードが存在しませんが、クラスを宣言した時点でそのクラスと同じAPIのinterfaceが勝手に作られます（暗黙的なinterface）
 // インターフェイスは実装を持たない
 // Masterクラスの宣言であり、commit()メソッドを持ったMasterインターフェイスの宣言でもある
 class Master {
@@ -591,17 +593,14 @@ class Performer {
     print('PerformerMethod');
   }
 }
-class Musical {
-  // mixinに使う場合はコンストラクタが定義できない
-  // Musical() {
-  //   print('Musical');
-  // }
+mixin Musical {
+  // mixinはコンストラクタは定義できない
   void MusicalMethod() {
     print('MusicalMethod');
   }
 }
 
-// ミックスイン、with句でつないだクラスの実装が使える
+// ミックスイン、with句でつないだmixinの実装が使える
 // 多重継承に似ているが、コンストラクタが定義できるのはextendsしたクラスのみ
 class Musician extends Performer with Musical {
   Musician(): super() {
